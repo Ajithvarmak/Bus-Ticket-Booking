@@ -7,7 +7,7 @@ def login():
         password=input("Enter your password: ")
         if user!="" and password!="":
             print("Login successful!")
-            search_bus() # if the login sucess then only go to search 
+            search_bus()
         else: 
             print("login failed!")
             break
@@ -68,13 +68,15 @@ def bus_time(From,To,date):
         print("time not available")
 
 # bus details requirement 
-
 def bus_details(date,departure,arrived,From,To):
     print("Bus Details",From.capitalize(),"to",To.capitalize())
     print(" Ambal Travels ", "|", "Date:",date, "|", "Departure:",departure,"|","Arriver:",arrived)
+    price=route_price(From,To)
+    seats=create_seats(price)
+    show_seats(seats,From,To)
+    choose_seat(seats)
 
 # route price requirement 
-
 def route_price(From,To):
     route={
         ("cumbum","theni"):100,
@@ -99,5 +101,45 @@ def route_price(From,To):
         return price
     else:
         print("price not available")
+
+# seat class
+class Seat:
+    def __init__(self,number,price):
+        self.number = number
+        self.available = True
+        self.gender=None
+
+        if self.number <=14:
+            self.price=price
+        else:
+            self.price= price // 2+20
+
+    def show(self):
+        if self.available:
+            status="available"
+        elif self.gender =="female only":
+            status="female only"
+        else:
+            status="booked"+str(self.gender)
+        print("Seat",self.number,"|",status,"|","Price",self.price)
+
+# create seat 1 - 20
+def create_seats(price):
+    seats =[]
+    for i in range (1,21):
+        seats.append(Seat(i,price))
+    return seats
+
+def show_seats(seats,From,To):
+    print("Seat Details")
+    print("Route:",From,"to",To)
+    for s in seats:
+        s.show()
+
+def find(seats,n):
+    for s in seats:
+        if s.number ==n:
+            return s
+    return None  
 
 login()
