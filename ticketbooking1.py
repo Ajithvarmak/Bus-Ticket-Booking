@@ -74,7 +74,7 @@ def bus_details(date,departure,arrived,From,To):
     price=route_price(From,To)
     seats=create_seats(price)
     show_seats(seats,From,To)
-    choose_seat(seats)
+    seat_booking(seats,From,To)
 
 # route price requirement 
 def route_price(From,To):
@@ -141,5 +141,20 @@ def find(seats,n):
         if s.number ==n:
             return s
     return None  
+
+#seat choosing requirement
+def seat_booking(seats,From,To):
+    show_seats(seats,From,To)
+
+    seat_no=int(input("Enter Seat No:"))
+    chosen =find(seats, seat_no)
+
+    if chosen==None:
+        print("Invaild Seat")
+        return None
+    if not chosen.available and chosen.gender !="female_only":
+        print("Seat",seat_no," is Already Booked ")
+        return None
+    return seat_no,chosen
 
 login()
