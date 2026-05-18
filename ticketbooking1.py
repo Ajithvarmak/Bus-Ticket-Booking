@@ -32,14 +32,14 @@ def search_bus():
         
         if (From in place) and (To in place):
             print("Bus Available From ",From,"To",To)
-            bus_time(From,To)
+            bus_time(From,To,date)
         else:
             print("Bus Not Available")
             break
         break
 
 # bus time in requirement 2
-def bus_time(From,To):
+def bus_time(From,To,date):
     time_schedule={
         ("cumbum","theni"):["12.00","12.45"],
         ("cumbum","dindigal"):["12.00","2.30"],
@@ -62,9 +62,42 @@ def bus_time(From,To):
         departure=str(times[0])
         arrived=str(times[1])
         print("Departure:",departure,"From",From)
-        print("Arrived Time:",arrived,"To", To)     
+        print("Arrived Time:",arrived,"To", To) 
+        bus_details(date,departure,arrived,From,To)    
     else:
         print("time not available")
 
-login()
+# bus details requirement 
 
+def bus_details(date,departure,arrived,From,To):
+    print("Bus Details",From.capitalize(),"to",To.capitalize())
+    print(" Ambal Travels ", "|", "Date:",date, "|", "Departure:",departure,"|","Arriver:",arrived)
+
+# route price requirement 
+
+def route_price(From,To):
+    route={
+        ("cumbum","theni"):100,
+        ("cumbum","dindigal"):150,
+        ("cumbum","palladam"):200,
+        ("cumbum","sulur"):350,
+        ("cumbum","coimbatore"):500,
+        ("theni","dindigal"):80,
+        ("theni","palladam"):120,
+        ("theni","sulur"):250,
+        ("theni","coimbatore"):400,
+        ("dindigal","palladam"):80,
+        ("dindigal","sulur"):180,
+        ("dindigal","coimbatore"):220,
+        ("palladam","sulur"):100,
+        ("palladam","coimbatore"):120,
+        ("sulur","coimbatore"):70,
+    }
+
+    if (From,To) in route:
+        price = route[(From,To)]
+        return price
+    else:
+        print("price not available")
+
+login()
