@@ -1,3 +1,5 @@
+18/5/2026 - 10.45AM backup (requirement 1 completed), (requirement 2 half completed)
+-------------------------------------------------------------------------------------
 #Login Requirement 
 def login():
     print("Welcome to the Ticket Booking System!")
@@ -11,7 +13,6 @@ def login():
         else: 
             print("login failed!")
             break
-
 #Search Requirement
 def search_bus():
     print("Search for Available Buses in Cumbum To Coimbatore Route")
@@ -32,39 +33,12 @@ def search_bus():
         
         if (From in place) and (To in place):
             print("Bus Available From ",From,"To",To)
-            bus_time(From,To)
         else:
             print("Bus Not Available")
-            break
         break
-
-# bus time in requirement 2
-def bus_time(From,To):
-    time_schedule={
-        ("cumbum","theni"):["12.00","12.45"],
-        ("cumbum","dindigal"):["12.00","2.30"],
-        ("cumbum","palladam"):["12.00","4.00"],
-        ("cumbum","sulur"):["12.00","4.30"],
-        ("cumbum","coimbatore"):["12.00","5.00"],
-        ("theni","dindigal"):["12.45","2.30"],
-        ("theni","palladam"):["12.45","4.00"],
-        ("theni","sulur"):["12.45","4.30"],
-        ("theni","coimbatore"):["12.45","5.00"],
-        ("dindigal","palladam"):["2.30","4.00"],
-        ("dindigal","sulur"):["2.30","4.30"],
-        ("dindigal","coimbatore"):["2.30","5.00"],
-        ("palladam","sulur"):["4.00","4.30"],
-        ("palladam","coimbatore"):["4.00","5.00"],
-        ("sulur","coimbatore"):["4.30","5.00"],
-    }
-    if (From,To) in time_schedule:
-        times=time_schedule[(From,To)]
-        departure=str(times[0])
-        arrived=str(times[1])
-        print("Departure:",departure,"From",From)
-        print("Arrived Time:",arrived,"To", To)     
-    else:
-        print("time not available")
-
 login()
+
+
+----------------------------------------------------------------------------------
+
 
