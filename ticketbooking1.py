@@ -148,7 +148,11 @@ def find(seats, n):
 # Seat choosing requirement
 def seat_booking(seats, From, To):
     show_seats(seats, From, To)
-    seat_no = int(input("Enter Seat No: "))
+    try:
+        seat_no = int(input("Enter Seat No: "))
+    except ValueError:
+        print("Invalid Seat")
+        return None
     chosen = find(seats, seat_no)
     if chosen is None:
         print("Invalid Seat")
@@ -172,6 +176,12 @@ def confirm_seat(seat_no, gender, chosen, seats):
     if chosen.gender == "female_only" and gender != "female":
         print("Seat", seat_no, "is reserved for female only")
         return False
+
+    ticket = ticket_create(seat_no)
+    if ticket is None:
+        print("Seat not confirmed because payment failed")
+        return False
+
     chosen.available = False
     chosen.gender = gender
     if gender == "female":
@@ -186,5 +196,44 @@ def confirm_seat(seat_no, gender, chosen, seats):
             print("Seat", next_seat.number, "reserved female only")
     print("Confirmed")
     return True
+
+#ticket requirement
+def ticket_create(seat_no):
+    print("Your Seat Number is",seat_no)
+    pnr="TN2026"+str(seat_no)
+    ticket_no=str(seat_no)+"625531"
+    paid = payment()
+    if paid == False:
+        return None
+    print("PNR Number:", pnr)
+    print("Ticket Number:", ticket_no)
+    return pnr,ticket_no
+# payment requirement 
+def payment():
+    print("Payment Method")
+    print("1:UPI  2:Net Banking  3:card")
+    try:
+        paymenttype = int(input("Choose: "))
+    except ValueError:
+        print("invalid payment")
+        return False
+
+    if paymenttype == 1:
+        pay_type = "UPI"
+    elif paymenttype == 2:
+        pay_type = "Net Bank"
+    elif paymenttype == 3:
+        pay_type = "card"
+    else:
+        print("invalid payment")
+        return False
+
+    print("Payment type:", pay_type)
+
+    if input("confirm (yes/no): ") == "yes":
+        print("payment success")
+        return True
+    else:
+        return False
 
 login()
