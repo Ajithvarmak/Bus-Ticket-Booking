@@ -237,4 +237,15 @@ def payment():
     else:
         return False
 
+#show passanger details
+def showdetails(name,age,gender,mobile,seat_no,pnr,ticket_no):
+    print("Name: ",name)
+    print("Age: ",age)
+    print("Gender: ",gender)
+    print("Mobile No: ",mobile)
+    print("Seat No: ",seat_no)
+    print("PNR Number: ",pnr)
+    print("Ticket No: ",ticket_no)
+    print(" Your Ticket Was Successfully Booked ")
+
 login()
