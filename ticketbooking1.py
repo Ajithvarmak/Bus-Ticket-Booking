@@ -248,4 +248,25 @@ def showdetails(name,age,gender,mobile,seat_no,pnr,ticket_no):
     print("Ticket No: ",ticket_no)
     print(" Your Ticket Was Successfully Booked ")
 
+# verification requirement
+def verification(name, ticket_no, seat_no, pnr, To):
+    if input("Do you want verification process only? (yes/no): ").strip().lower() == "yes":
+        Name = input("Enter Your Name:")
+        TicketNo = input("Enter Your TicketNo:")
+        SeatNo = input("Enter Your SeatNo:")
+        Pnr = input("Enter Your Pnr:")
+
+        if Name == name and TicketNo == ticket_no and SeatNo == str(seat_no) and Pnr == pnr:
+            print("Verfication Is Successfully")
+        else:
+            print("invaild")
+
+        print("Yes You Enter the Bus")
+        print(".")
+        print(".")
+        print("Only 30Min to Reach", To)
+        print(".")
+        print(".")
+        print("thanks for choosing as,TN60 Travels have a safe journey ")
+
 login()
