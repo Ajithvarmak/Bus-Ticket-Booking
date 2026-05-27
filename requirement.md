@@ -18,4 +18,11 @@ This is Our Project Requirement
 
 we can update this requirement in future for front end, frameworks, database (mysql) 
 
-what are completed now ?
+DATABASE INTEGRATION LAYER (NEW)
+# Requirement 14 - Relational Database Connection (Exception handling via mysql.connector)
+# Requirement 15 - Database CRUD Operations:
+#                - CREATE: Saving new bookings and passenger records
+#                - READ: Fetching user authentication, routes, and seat maps
+#                - UPDATE: Real-time seat state changes (Booked / Reserved)
+#                - DELETE: Ticket cancellation handling with full database rollback safety
+# Requirement 16 - Transaction Control (Using db.commit() and db.rollback() to preserve data integrity)
