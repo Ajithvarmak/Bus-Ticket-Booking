@@ -278,4 +278,459 @@ def verification(name, ticket_no, seat_no, pnr, To):
 login()
 
 ___________________________________________________________________________________________________
+After SQL Integrated Code Backup
+
+Code Here -------
+
+import mysql.connector
+
+# Database Connection 
+try:
+    db = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="2705",
+        database="ticket_booking"
+    )
+    cursor = db.cursor()
+    print("Connected to database!")
+except:
+    print("Database connection failed!")
+    exit()
+
+# BUS CLASSES 
+class Bus:
+    def __init__(self, bus_id, bus_name, date, departure, arrived, From, To, price):
+        self.bus_id = bus_id
+        self.bus_name = bus_name
+        self.date = date
+        self.departure = departure
+        self.arrived = arrived
+        self.From = From
+        self.To = To
+        self.price = price
+
+    def show(self):
+        print(" Bus Details ")
+        print("Bus Name: ", self.bus_name)
+        print("Route: ", self.From, " to ", self.To)
+        print("Date: ", self.date)
+        print("Departure: ", self.departure)
+        print("Arrival: ", self.arrived)
+        print("Price: ", self.price)
+
+class Passenger:
+    def __init__(self, name, age, gender, mobileno, emailid):
+        self.name = name
+        self.age = age
+        self.gender = gender
+        self.mobileno = mobileno
+        self.emailid = emailid
+
+class Ticket:
+    def __init__(self, seat_no, bus_id):
+        self.seat_no = seat_no
+        self.pnr = "TN2026" + str(bus_id) + str(seat_no)
+        self.ticket_no = str(bus_id) + str(seat_no) + "625531"
+
+    def show(self):
+        print("PNR: ", self.pnr)
+        print("Ticket No: ", self.ticket_no)
+
+class Seat:
+    def __init__(self, seat_id, number, price, available, status):
+        self.seat_id = seat_id
+        self.number = number
+        self.price = price
+        self.available = bool(available)
+        self.status = status
+
+    def show(self):
+        print("Seat", self.number, "|", self.status, "| Price:", self.price)
+
+# LOGIN 
+def login():
+    print(" Welcome to TN60 Ticket Booking System! ")
+    print(" Cumbum to Coimbatore Route ")
+
+    user = input("Username: ")
+    password = input("Password: ")
+
+    cursor.execute(
+        "select user_id from users where username=%s and password_=%s",
+        (user, password)
+    )
+    login_user = cursor.fetchone()
+
+    if login_user:
+        print("Login successful!")
+        main_menu()
+    else:
+        print("Wrong username or password!")
+
+
+# MAIN MENU 
+def main_menu():
+    while True:
+        print(" Main Menu ")
+        print("1. Book Ticket")
+        print("2. Verify Ticket")
+        print("3. Cancel Ticket")
+        print("4. Exit")
+
+        choice = input("Enter choice: ")
+        if choice == "1":
+            search_bus()
+        elif choice == "2":
+            verify_ticket()
+        elif choice == "3":
+            cancel_ticket()
+        elif choice == "4":
+            print("Thank you! Goodbye!")
+            break
+        else:
+            print(" Try again.")
+
+
+# SEARCH BUS 
+def search_bus():
+    print(" Search Bus ")
+
+    cursor.execute("select from_ from routes union select to_ from routes")
+    places = cursor.fetchall()
+
+    print("Available Stops:")
+    for place in places:
+        print("place", place[0])
+   
+
+    From = input("From: ").lower()
+    To = input("To  : ").lower()
+
+    print("\nAvailable Date:")
+    print("1. 2027-07-12")
+    date = input("Choose date (1): ")
+
+    if date == "1":
+        date = "2027-07-12"
+    else:
+        print("Invalid date choice!")
+        return
+
+    show_bus_and_book(From, To, date)
+
+# SHOW BUS 
+def show_bus_and_book(From, To, date):
+    cursor.execute(
+        "select route_id, departure, arrival, base_price from routes where from_=%s and to_=%s",
+        (From, To)
+    )
+    route = cursor.fetchone()
+
+    if route is None:
+        print("No bus found for this route!")
+        return
+
+    route_id = route[0]
+    departure = route[1]
+    arrived = route[2]
+    price = route[3]
+
+    bus_id = get_or_create_bus(route_id, date)
+    bus = Bus(bus_id, "AMBAL TRAVELS", date, departure, arrived, From, To, price)
+    bus.show()
+
+    create_seats(bus_id, price)
+    book_ticket(bus, route_id)
+
+def get_or_create_bus(route_id, date):
+    cursor.execute(
+        "select bus_id from bus where route_id=%s and dates=%s",
+        (route_id, date)
+    )
+    row = cursor.fetchone()
+
+    if row:
+        return row[0]
+
+    cursor.execute(
+        "insert into bus(bus_name, dates, route_id) values(%s, %s, %s)",
+        ("AMBAL TRAVELS", date, route_id)
+    )
+    db.commit()
+    return cursor.lastrowid
+
+# SEATS
+def create_seats(bus_id, price):
+    for seat_no in range(1, 21):
+        if seat_no <= 14:
+            seat_price = price
+        else:
+            seat_price = price // 2 + 20
+
+        cursor.execute(
+            "insert ignore into seat(bus_id, seat_no, price) values(%s, %s, %s)",
+            (bus_id, seat_no, seat_price)
+        )
+
+    db.commit()
+
+def load_seats(bus_id):
+    cursor.execute(
+        "select seat_id, seat_no, price, is_available, seat_status from seat where bus_id=%s order by seat_no",
+        (bus_id,)
+    )
+
+    seats = []
+    for row in cursor.fetchall():
+        s = Seat(row[0], row[1], row[2], row[3], row[4])
+        seats.append(s)
+
+    return seats
+
+def find_seat(seats, seat_no):
+    for s in seats:
+        if s.number == seat_no:
+            return s
+
+    return None
+
+def show_seats(seats):
+    print("\n--- Seat List ---")
+    for s in seats:
+        s.show()
+
+# BOOK TICKET
+def book_ticket(bus, route_id):
+    seats = load_seats(bus.bus_id)
+    show_seats(seats)
+
+    try:
+        seat_no = int(input("\nEnter seat number: ").strip())
+    except ValueError:
+        print("Invalid seat number!")
+        return
+
+    chosen = find_seat(seats, seat_no)
+
+    if chosen is None:
+        print("Seat not found!")
+        return
+
+    if chosen.available is False and chosen.status != "female_only":
+        print("Seat already booked!")
+        return
+
+    passenger = get_passenger_details()
+
+    if chosen.status == "female_only" and passenger.gender != "female":
+        print("This seat is for female passengers only!")
+        return
+
+    payment_type = do_payment()
+    if payment_type is None:
+        print("Payment not completed. Booking cancelled.")
+        return
+
+    ticket = Ticket(seat_no, bus.bus_id)
+
+    try:
+        update_seat(chosen, passenger.gender, seats)
+        save_booking(passenger, ticket, bus.bus_id, route_id, payment_type)
+        db.commit()
+    except mysql.connector.Error as err:
+        db.rollback()
+        print("Booking failed:", err)
+        return
+
+    print(" Ticket Booked Successfully! ")
+    print("Name: ", passenger.name)
+    print("Age: ", passenger.age)
+    print("Gender: ", passenger.gender)
+    print("Mobile: ", passenger.mobileno)
+    print("Seat No: ", ticket.seat_no)
+    ticket.show()
+
+    print(" Updated Seat List ")
+    updated = load_seats(bus.bus_id)
+    show_seats(updated)
+
+# PASSENGER DETAILS 
+def get_passenger_details():
+    print(" Passenger Details ")
+    name = input("Name:  ")
+
+    try:
+        age = int(input("Age: "))
+    except ValueError:
+        print("Invalid age! Saved as 0.")
+        age = 0
+
+    gender = input("Gender: ").lower()
+    mobileno = input("Mobile: ")
+    emailid = input("Email: ")
+    return Passenger(name, age, gender, mobileno, emailid)
+
+# PAYMENT
+def do_payment():
+    print(" Payment ")
+    print("1. UPI")
+    print("2. Net Banking")
+    print("3. Card")
+
+    paymenttype = input("Choose payment method: ").strip()
+
+    if paymenttype == "1":
+        pay_type = "UPI"
+    elif paymenttype == "2":
+        pay_type = "NetBanking"
+    elif paymenttype == "3":
+        pay_type = "Debit Card"
+    else:
+        print("Invalid payment method!")
+        return None
+
+    print("Payment Method:", pay_type)
+    confirm = input("Confirm payment? (yes/no): ").lower()
+
+    if confirm == "yes":
+        print("Payment successful!")
+        return pay_type
+    else:
+        print("Payment cancelled!")
+        return None
+
+# UPDATE SEAT AFTER BOOKING
+def update_seat(chosen, gender, seats):
+    chosen.available = False
+    chosen.status  = "booked " + gender
+
+    cursor.execute(
+        "update seat set is_available=%s, seat_status=%s where seat_id=%s",
+        (chosen.available, chosen.status, chosen.seat_id)
+    )
+
+    if gender == "female":
+        if chosen.number % 2 == 1:
+            pair = chosen.number + 1
+        else:
+            pair = chosen.number - 1
+
+        next_seat = find_seat(seats, pair)
+
+        if next_seat is not None and next_seat.available:
+            cursor.execute(
+                "update seat set is_available=false, seat_status='female_only' where seat_id=%s",
+                (next_seat.seat_id,)
+            )
+            print("Seat", pair, "is now reserved for female passengers.")
+
+# SAVE BOOKING TO DB 
+def save_booking(passenger, ticket, bus_id, route_id, payment_type):
+    cursor.execute(
+        "insert into passengers(name_, age, gender, route_id, mobile, email) values(%s, %s, %s, %s, %s, %s)",
+        (passenger.name, passenger.age, passenger.gender, route_id, passenger.mobileno, passenger.emailid)
+    )
+
+    passenger_id = cursor.lastrowid
+    payment_value = payment_type + "-" + str(passenger_id)
+
+    cursor.execute(
+        "insert into booking(passenger_id, bus_id, seat_no, name_, pnr, ticket_no, payment_type) values(%s, %s, %s, %s, %s, %s, %s)",
+        (passenger_id, bus_id, ticket.seat_no, passenger.name, ticket.pnr, ticket.ticket_no, payment_value)
+    )
+
+# VERIFY TICKET
+def verify_ticket():
+    print(" Ticket Verification ")
+
+    name = input("Your Name: ").strip()
+    ticket_no = input("Your Ticket No: ").strip()
+    seat_no = input("Your Seat No: ").strip()
+    pnr = input("Your PNR: ").strip()
+
+    cursor.execute(
+        """
+        select p.name_, b.ticket_no, b.seat_no, b.pnr, r.to_, r.arrival
+        from booking b
+        join passengers p on b.passenger_id = p.passenger_id
+        join bus bu on b.bus_id = bu.bus_id
+        join routes r on bu.route_id = r.route_id
+        where p.name_=%s and b.ticket_no=%s and b.seat_no=%s and b.pnr=%s
+        """,
+        (name, ticket_no, seat_no, pnr)
+    )
+    row = cursor.fetchone()
+
+    if row is None:
+        print("Ticket not found! Please check your details.")
+        return
+
+    print("\nVerification Successful!")
+    print("You can board the bus.")
+    print("Destination : ", row[4])
+    print("Arrival Time : ", row[5])
+    print("Have a safe journey!")
+
+# CANCEL TICKET
+def cancel_ticket():
+    print(" Cancel Ticket ")
+    name = input("Your Name: ")
+    ticket_no = input("Your Ticket No: ")
+    seat_no = input("Your Seat No: ")
+    pnr = input("Your PNR: ")
+
+    cursor.execute(
+        """
+        select b.booking_id, b.passenger_id, b.bus_id, b.seat_no, p.gender
+        from booking b
+        join passengers p on b.passenger_id = p.passenger_id
+        where p.name_=%s and b.ticket_no=%s and b.seat_no=%s and b.pnr=%s
+        """,
+        (name, ticket_no, seat_no, pnr)
+    )
+    row = cursor.fetchone()
+
+    if row is None:
+        print("Ticket not found!")
+        return
+
+    booking_id   = row[0]
+    passenger_id = row[1]
+    bus_id = row[2]
+    booked_seat = row[3]
+    gender = row[4]
+
+    confirm = input("Are you sure you want to cancel? (yes/no): ").lower()
+    if confirm != "yes":
+        print("Cancellation stopped.")
+        return
+    try:
+        cursor.execute("delete from booking where booking_id=%s", (booking_id,))
+        cursor.execute("delete from passengers where passenger_id=%s", (passenger_id,))
+        cursor.execute(
+            "update seat set is_available=true, seat_status='available' where bus_id=%s and seat_no=%s",
+            (bus_id, booked_seat)
+        )
+
+        if gender == "female":
+            if booked_seat % 2 == 1:
+                pair = booked_seat + 1
+            else:
+                pair = booked_seat - 1
+
+            cursor.execute(
+                "update seat set is_available=true, seat_status='available' where bus_id=%s and seat_no=%s and seat_status='female_only'",
+                (bus_id, pair)
+            )
+
+        db.commit()
+        print("Ticket cancelled successfully!")
+
+    except mysql.connector.Error as err:
+        db.rollback()
+        print("Cancellation failed:", err)
+
+# Start 
+login()
 
